@@ -1,121 +1,173 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useMemo, useState } from 'react'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [showPanel, setShowPanel] = useState(false)
+  const [readerMode, setReaderMode] = useState(false)
+  const [highContrast, setHighContrast] = useState(false)
+  const [fontScale, setFontScale] = useState(100)
+  const [draft, setDraft] = useState(
+    'My dearest,\n\nWhen the morning light touches your name in my thoughts, the whole day becomes kinder.\n\nWith love,\nYours always'
+  )
+  const [selectedText, setSelectedText] = useState('')
+  const [suggestion, setSuggestion] = useState('')
+  const [suggestions, setSuggestions] = useState([])
+
+  const appStyle = useMemo(
+    () => ({
+      fontSize: `${fontScale}%`,
+    }),
+    [fontScale]
+  )
+
+  function handleSelection(event) {
+    const textarea = event.currentTarget
+    const picked = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)
+    setSelectedText(picked)
+  }
+
+  function handleSuggestionSubmit(event) {
+    event.preventDefault()
+    if (!suggestion.trim()) return
+
+    setSuggestions((current) => [
+      {
+        id: crypto.randomUUID(),
+        selectedText: selectedText.trim(),
+        suggestion: suggestion.trim(),
+      },
+      ...current,
+    ])
+    setSuggestion('')
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+    <div
+      className={`app ${readerMode ? 'reader-mode' : ''} ${
+        highContrast ? 'high-contrast' : ''
+      }`}
+      style={appStyle}
+    >
+      <a className="skip-link" href="#letter">
+        Skip to letter
+      </a>
+      <header className="top-bar">
+        <h1>LoveLetter Studio</h1>
         <button
           type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          className="panel-toggle"
+          aria-expanded={showPanel}
+          aria-controls="accessibility-panel"
+          onClick={() => setShowPanel((open) => !open)}
         >
-          Count is {count}
+          Accessibility
         </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="layout">
+        <aside
+          id="accessibility-panel"
+          className={`side-panel ${showPanel ? 'open' : ''}`}
+          aria-label="Accessibility controls"
+        >
+          <h2>Reader Controls</h2>
+          <label className="control">
+            <span>Reader mode</span>
+            <input
+              type="checkbox"
+              checked={readerMode}
+              onChange={(event) => setReaderMode(event.target.checked)}
+            />
+          </label>
+          <label className="control">
+            <span>High contrast</span>
+            <input
+              type="checkbox"
+              checked={highContrast}
+              onChange={(event) => setHighContrast(event.target.checked)}
+            />
+          </label>
+          <label className="control">
+            <span>Font size ({fontScale}%)</span>
+            <input
+              type="range"
+              min="90"
+              max="130"
+              step="5"
+              value={fontScale}
+              onChange={(event) => setFontScale(Number(event.target.value))}
+            />
+          </label>
+        </aside>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="content">
+          <article className="card">
+            <h2 id="letter">Letter draft</h2>
+            <p className="help">
+              Select any text in the draft to include context in your suggestion.
+            </p>
+            <label htmlFor="draft" className="visually-hidden">
+              Love letter draft
+            </label>
+            <textarea
+              id="draft"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onSelect={handleSelection}
+              rows={12}
+            />
+          </article>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <article className="card">
+            <h2>Suggest edits</h2>
+            <form onSubmit={handleSuggestionSubmit} className="suggest-form">
+              <label htmlFor="selected">Selected text (optional)</label>
+              <textarea
+                id="selected"
+                value={selectedText}
+                onChange={(event) => setSelectedText(event.target.value)}
+                rows={3}
+                placeholder="Selected part of the letter..."
+              />
+
+              <label htmlFor="suggestion">Your suggested edit</label>
+              <textarea
+                id="suggestion"
+                value={suggestion}
+                onChange={(event) => setSuggestion(event.target.value)}
+                rows={4}
+                placeholder="Share your improvement..."
+                required
+              />
+
+              <button type="submit" className="primary-button">
+                Submit suggestion
+              </button>
+            </form>
+
+            <h3>Recent suggestions</h3>
+            <ul className="suggestion-list" aria-live="polite">
+              {suggestions.length === 0 ? (
+                <li>No suggestions yet.</li>
+              ) : (
+                suggestions.map((item) => (
+                  <li key={item.id}>
+                    {item.selectedText ? (
+                      <p>
+                        <strong>Context:</strong> {item.selectedText}
+                      </p>
+                    ) : null}
+                    <p>
+                      <strong>Suggestion:</strong> {item.suggestion}
+                    </p>
+                  </li>
+                ))
+              )}
+            </ul>
+          </article>
+        </section>
+      </main>
+    </div>
   )
 }
 
