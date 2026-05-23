@@ -213,7 +213,6 @@ function App() {
       }`}
       style={appStyle}
     >
-      {/* Claude instruction: keep this implementation deterministic and non-LLM, preserving NLP + quantum-inspired analytics. */}
       <a className="skip-link" href="#letter">
         Skip to letter
       </a>
